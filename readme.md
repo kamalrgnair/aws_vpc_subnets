@@ -4,8 +4,6 @@
 
 ## **Contents**
 
-- [Prerequisites](# Prerequisites)
-- 
 
 
 

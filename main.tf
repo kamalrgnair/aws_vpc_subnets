@@ -436,6 +436,7 @@ resource "aws_instance" "webserver" {
   ami                          =  var.ami
   instance_type                =  var.type
   subnet_id                    =  aws_subnet.public1.id
+  user_data                    =  file("web_userdata.sh")
   vpc_security_group_ids       =  [ aws_security_group.webserver.id]
   key_name                     =  aws_key_pair.key.id
   tags = {
@@ -454,6 +455,7 @@ resource "aws_instance" "database" {
   ami                          =  var.ami
   instance_type                =  var.type
   subnet_id                    =  aws_subnet.private1.id
+  user_data                    =  file("db_userdata.sh")
   vpc_security_group_ids       =  [ aws_security_group.database.id]
   key_name                     =  aws_key_pair.key.id
   tags = {

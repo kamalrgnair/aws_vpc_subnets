@@ -64,7 +64,7 @@ In this project I'm running Terraform on an EC2 Linux instance with IAM role att
   terraform init 
   ```
 
-  ![screenshot](img2.png)
+  ![screenshot](img/img1)
 
 ### Creating Terraform configuration for this AWS VPC project
 

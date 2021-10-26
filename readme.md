@@ -475,7 +475,7 @@ In this project I'm running Terraform on an EC2 Linux instance with IAM role att
 
 
 
-![screenshot](/imgs/image7.png)
+![screenshot](/imgs/img7.png)
 
 - Create 3 EC2 Linux instances, webserver and bastion server in public and database server in private subnet
 

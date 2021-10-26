@@ -64,7 +64,7 @@ In this project I'm running Terraform on an EC2 Linux instance with IAM role att
   terraform init 
   ```
 
-  ![screenshot](img/img1)
+  ![screenshot](/imgs/img1)
 
 ### Creating Terraform configuration for this AWS VPC project
 
@@ -430,13 +430,13 @@ In this project I'm running Terraform on an EC2 Linux instance with IAM role att
 
   ​	-auto-approve can be used in with apply to override the prompt to approve.
 
-  ![screenshot](/home/kamal/Desktop/img3.png)
+  ![screenshot](/imgs/img3.png)
 
    
 
-  ![screenshot](/home/kamal/Desktop/img4.png)
+  ![screenshot](/imgs/img4.png)
 
-  ![screenshot](/home/kamal/Desktop/img5.png)
+  ![screenshot](/imgs/img5.png)
 
   
 

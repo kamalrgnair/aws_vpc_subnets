@@ -39,7 +39,7 @@ In this project I'm running Terraform on an EC2 Linux instance with IAM role att
   terraform version
   ```
 
-  ![screenshot](img1.png)
+  ![screenshot](/imgs/img1.png)
 
  
 

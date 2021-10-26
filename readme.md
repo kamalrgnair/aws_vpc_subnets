@@ -483,6 +483,8 @@ In this project I'm running Terraform on an EC2 Linux instance with IAM role att
 
 - Create security groups for bastion, webserver and database server such that webserver security group allows connections/traffic to 80,443 port from internet and connections to 22 port from bastion, database security group allows connections to 3306 port from webserver and connections to to 22 port from bastion, connections to 22 port is only allowed in bastion security group. Attach these security groups to respective servers.
 
+- Bash script for installing apache and mysql is passed in userdata file
+
 - Create SSH keypair for accessing Bastion server from outside and attach it to Bastion server.
 
   > **Bastion Security group**
@@ -699,6 +701,7 @@ In this project I'm running Terraform on an EC2 Linux instance with IAM role att
     instance_type                =  var.type
     subnet_id                    =  aws_subnet.public1.id
     vpc_security_group_ids       =  [ aws_security_group.webserver.id]
+    user_data                    =  file("web_userdata.sh")
     key_name                     =  aws_key_pair.key.id
     tags = {
       Name = "${var.project}-webserver"
@@ -707,9 +710,20 @@ In this project I'm running Terraform on an EC2 Linux instance with IAM role att
     
   }
   ```
-
+  
+  ```
+  [root@kamal-workbox vpc_project]# cat web_userdata.sh
+  #!/bin/bash
+  yum install httpd  php -y
+  systemctl start httpd
+  systemctl enable httpd
+  [root@kamal-workbox vpc_project]# 
+  ```
+  
+  
+  
   > **Creating Database server**
-
+  
   ```
   resource "aws_instance" "database" {
   
@@ -717,6 +731,7 @@ In this project I'm running Terraform on an EC2 Linux instance with IAM role att
     instance_type                =  var.type
     subnet_id                    =  aws_subnet.private1.id
     vpc_security_group_ids       =  [ aws_security_group.database.id]
+    user_data                    =  file("db_userdata.sh")
     key_name                     =  aws_key_pair.key.id
     tags = {
       Name = "${var.project}-database"
@@ -725,6 +740,17 @@ In this project I'm running Terraform on an EC2 Linux instance with IAM role att
     
   }
   ```
+  
+  ```
+  [root@kamal-workbox vpc_project]# cat db_userdata.sh
+  #!/bin/bash
+  yum install mariadb-server -y
+  systemctl start mariadb
+  systemctl enable mariadb
+  [root@kamal-workbox vpc_project]# 
+  ```
+  
+  
 
 - Getting ouput data from Terraform by declaring output value in output.tf file 
 
@@ -759,4 +785,10 @@ In this project I'm running Terraform on an EC2 Linux instance with IAM role att
   ```
 
   ![screenshot](/imgs/img8.png)
+
+
+
+### Conclusion
+
+
 

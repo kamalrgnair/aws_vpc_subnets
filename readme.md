@@ -9,6 +9,7 @@
 - **Creating Terraform configuration for this AWS VPC project**
 - **Validating, creating and executing the plan**
 - **Verifying the AWS VPC project**
+- **Deploying webserver in public subnet and Database server in private subnet**
 
 ###  Prerequisites
 
@@ -92,13 +93,9 @@ In this project I'm running Terraform on an EC2 Linux instance with IAM role att
   vpc_subnets = "3"
   ```
 
-- ### Creating main configuration for provisioning VPC infrastructure
+- #### Creating main configuration for VPC infrastructure in main.tf file
 
-  ***
-
-  
-
-  > **Fetching list of availability zones**
+   > **Fetching list of availability zones**
 
   Availability Zones data source allows access to the list of AWS Availability Zones which can be accessed by an AWS account within the region configured in the provider.
 
@@ -110,7 +107,7 @@ In this project I'm running Terraform on an EC2 Linux instance with IAM role att
 
   
 
-  > **Create VPC**
+   > **Create VPC**
 
   ```
   resource "aws_vpc" "vpc" {
@@ -131,7 +128,7 @@ In this project I'm running Terraform on an EC2 Linux instance with IAM role att
 
   
 
-  > **Create a VPC Internet Gateway**
+   > **Create a VPC Internet Gateway**
 
   Internet Gateway allows communication between your VPC and the internet. It supports IPv4 and IPv6 traffic.
 
@@ -153,7 +150,7 @@ In this project I'm running Terraform on an EC2 Linux instance with IAM role att
 
    
 
-  > **Create Subnets**
+   > **Create Subnets**
 
   In this project I'm creating 3 public and 3 private subnets inside the new vpc. I'm creating VPC in Mumbai region so there are 3 AZ's available and in each AZ I'm adding a public and private subnet.
 
@@ -319,7 +316,7 @@ In this project I'm running Terraform on an EC2 Linux instance with IAM role att
 
   > **Create Route Tables for Public and Private subnets**
 
-  ##### *Route Table for Public  subnet*
+  *Route Table for Public  subnet*
 
   ```
   resource "aws_route_table" "public" {
@@ -338,7 +335,7 @@ In this project I'm running Terraform on an EC2 Linux instance with IAM role att
   }
   ```
 
-  ##### *Route Table for Private subnet*
+   *Route Table for Private subnet*
 
   ```
   resource "aws_route_table" "private" {
@@ -356,7 +353,7 @@ In this project I'm running Terraform on an EC2 Linux instance with IAM role att
   }
   ```
 
-  > **Creating an association between public route table and public subnets**
+   > **Creating an association between public route table and public subnets**
 
   ```
   resource "aws_route_table_association" "public1" {
@@ -375,7 +372,7 @@ In this project I'm running Terraform on an EC2 Linux instance with IAM role att
   }
   ```
 
-  > **Creating an association between private route table and private subnets**
+   > **Creating an association between private route table and private subnets**
 
   ```
   resource "aws_route_table_association" "private1" {
@@ -394,7 +391,7 @@ In this project I'm running Terraform on an EC2 Linux instance with IAM role att
   }
   ```
 
-  > Project directory will have following list of configurations
+   > Project directory will have following list of configurations
 
   ```
   [root@kamal-workbox vpc_project]# ls -l
@@ -407,6 +404,8 @@ In this project I'm running Terraform on an EC2 Linux instance with IAM role att
   ```
 
 ### **Validating, creating and executing the plan**
+
+***
 
 - *Validate*
 
@@ -438,9 +437,11 @@ In this project I'm running Terraform on an EC2 Linux instance with IAM role att
 
   ![screenshot](/imgs/img5.png)
 
-  
+### Verifying the AWS VPC project
 
-- >  **list resources**
+***
+
+- *List resources*
 
   ```terraform state list``` command gives the list of resources from terrafrom state about the created infrastructure and configuration.
 
@@ -468,4 +469,294 @@ In this project I'm running Terraform on an EC2 Linux instance with IAM role att
   [root@kamal-workbox vpc_project]#
   ```
 
+- *Login to AWS console and verify these resources are created*.
+
+### Deploying webserver in public subnet and Database server in private subnet
+
+
+
+![screenshot](/imgs/image7.png)
+
+- Create 3 EC2 Linux instances, webserver and bastion server in public and database server in private subnet
+
+- Bastion server is for securing access, SSH access to webserver and database server is restricted to  bastion server
+
+- Create security groups for bastion, webserver and database server such that webserver security group allows connections/traffic to 80,443 port from internet and connections to 22 port from bastion, database security group allows connections to 3306 port from webserver and connections to to 22 port from bastion, connections to 22 port is only allowed in bastion security group. Attach these security groups to respective servers.
+
+- Create SSH keypair for accessing Bastion server from outside and attach it to Bastion server.
+
+  > **Bastion Security group**
+
+  ```
+  resource "aws_security_group" "bastion" {
+      
+    vpc_id      = aws_vpc.vpc.id
+    name        = "${var.project}-bastion"
+    description = "allow 22 port"
   
+    ingress = [
+      {
+        description      = ""
+        prefix_list_ids  = []
+        security_groups  = []
+        self             = false
+        from_port        = 22
+        to_port          = 22
+        protocol         = "tcp"
+        cidr_blocks      = [ "0.0.0.0/0" ]
+        ipv6_cidr_blocks = [ "::/0" ]
+      } 
+        
+    ]
+  
+    egress = [
+      { 
+        description      = ""
+        prefix_list_ids  = []
+        security_groups  = []
+        self             = false
+        from_port        = 0
+        to_port          = 0
+        protocol         = "-1"
+        cidr_blocks      = ["0.0.0.0/0"]
+        ipv6_cidr_blocks = ["::/0"]
+      }
+    ]
+  
+    tags = {
+      Name = "${var.project}-bastion"
+      Project = var.project
+    }
+  }
+  ```
+
+  > **Webserver Security group**
+
+  ```
+  resource "aws_security_group" "webserver" {
+      
+    vpc_id      = aws_vpc.vpc.id
+    name        = "${var.project}-webserver"
+    description = "allow 80,443,22 port"
+  
+    ingress = [
+      {
+        description      = ""
+        prefix_list_ids  = []
+        security_groups  = []
+        self             = false
+        from_port        = 80
+        to_port          = 80
+        protocol         = "tcp"
+        cidr_blocks      = [ "0.0.0.0/0" ]
+        ipv6_cidr_blocks = [ "::/0" ]
+      },
+      {
+        description      = ""
+        prefix_list_ids  = []
+        security_groups  = []
+        self             = false
+        from_port        = 443
+        to_port          = 443
+        protocol         = "tcp"
+        cidr_blocks      = [ "0.0.0.0/0" ]
+        ipv6_cidr_blocks = [ "::/0" ]
+      },
+      {
+        description      = ""
+        prefix_list_ids  = []
+        security_groups  = []
+        self             = false
+        from_port        = 22
+        to_port          = 22
+        protocol         = "tcp"
+        cidr_blocks      = ["0.0.0.0/0"]
+        ipv6_cidr_blocks = ["::/0"]
+        security_groups  = [ aws_security_group.bastion.id ]
+      }
+        
+    ]
+  
+    egress = [
+       { 
+        description      = ""
+        prefix_list_ids  = []
+        security_groups  = []
+        self             = false
+        from_port        = 0
+        to_port          = 0
+        protocol         = "-1"
+        cidr_blocks      = ["0.0.0.0/0"]
+        ipv6_cidr_blocks = ["::/0"]
+      }
+    ]
+  
+    tags = {
+      Name = "${var.project}-webserver"
+      Project = var.project
+    }
+  }
+  ```
+
+  > **Database Security group**
+
+  ```
+  resource "aws_security_group" "database" {
+      
+    vpc_id      = aws_vpc.vpc.id
+    name        = "${var.project}-database"
+    description = "allow 3306,22 port"
+  
+    ingress = [
+      
+      {
+        description      = ""
+        prefix_list_ids  = []
+        security_groups  = []
+        self             = false
+        from_port        = 22
+        to_port          = 22
+        protocol         = "tcp"
+        cidr_blocks      = []
+        ipv6_cidr_blocks = []
+        security_groups  = [ aws_security_group.bastion.id ]
+      },
+      {
+        description      = ""
+        prefix_list_ids  = []
+        security_groups  = []
+        self             = false
+        from_port        = 3306
+        to_port          = 3306
+        protocol         = "tcp"
+        cidr_blocks      = []
+        ipv6_cidr_blocks = []
+        security_groups  = [ aws_security_group.webserver.id ]
+      }
+        
+    ]
+  
+    egress = [
+       { 
+        description      = ""
+        prefix_list_ids  = []
+        security_groups  = []
+        self             = false
+        from_port        = 0
+        to_port          = 0
+        protocol         = "-1"
+        cidr_blocks      = ["0.0.0.0/0"]
+        ipv6_cidr_blocks = ["::/0"]
+      }
+    ]
+  
+    tags = {
+      Name = "${var.project}-database"
+      Project = var.project
+    }
+  }
+  ```
+
+  > **Keypair Creation**
+
+  Create an ssh key pair in local system using ssh-keygen and copy public key to project directory, I've generated the ssh key pair and using ```mykey.pub``` public key for accessing bastion server. 
+
+  ```
+  resource "aws_key_pair" "key" {
+    key_name   = "${var.project}-key"
+    public_key = file("mykey.pub")
+    tags = {
+      Name = "${var.project}-sshkey"
+      Project = var.project
+    }
+  }
+  ```
+
+  > **Creating Bastion server**
+
+  ```
+  resource "aws_instance" "bastion" {
+  
+    ami                          =  var.ami
+    instance_type                =  var.type
+    subnet_id                    =  aws_subnet.public2.id
+    vpc_security_group_ids       =  [ aws_security_group.bastion.id]
+    key_name                     =  aws_key_pair.key.id
+    tags = {
+      Name = "${var.project}-bastion"
+      Project = var.project
+    }
+  
+  }
+  ```
+
+  > **Creating Webserver**
+
+  ```
+  resource "aws_instance" "webserver" {
+  
+    ami                          =  var.ami
+    instance_type                =  var.type
+    subnet_id                    =  aws_subnet.public1.id
+    vpc_security_group_ids       =  [ aws_security_group.webserver.id]
+    key_name                     =  aws_key_pair.key.id
+    tags = {
+      Name = "${var.project}-webserver"
+      Project = var.project
+    }
+    
+  }
+  ```
+
+  > **Creating Database server**
+
+  ```
+  resource "aws_instance" "database" {
+  
+    ami                          =  var.ami
+    instance_type                =  var.type
+    subnet_id                    =  aws_subnet.private1.id
+    vpc_security_group_ids       =  [ aws_security_group.database.id]
+    key_name                     =  aws_key_pair.key.id
+    tags = {
+      Name = "${var.project}-database"
+      Project = var.project
+    }
+    
+  }
+  ```
+
+- Getting ouput data from Terraform by declaring output value in output.tf file 
+
+  ```
+  output "aws_eip" {
+  value = aws_eip.eip.public_ip
+  }
+  output "aws_vpc" {
+  value = aws_vpc.vpc.id
+  }
+  output "aws_internet_gateway" {
+  value = aws_internet_gateway.igw.id
+  }
+  output "aws_nat_gateway" {
+  value = aws_nat_gateway.nat.id
+  }
+  output "aws_route_table_public" {
+  value = aws_route_table.public.id
+  }
+  output "aws_route_table_private" {
+  value = aws_route_table.private.id
+  }
+  output "webserver_public_ip" {
+    value = aws_instance.webserver.public_ip
+  }
+  output "database_private_ip" {
+    value = aws_instance.database.private_ip
+  }
+  output "bastion_public_ip" {
+    value = aws_instance.bastion.public_ip
+  }
+  ```
+
+  ![screenshot](/imgs/img8.png)
+

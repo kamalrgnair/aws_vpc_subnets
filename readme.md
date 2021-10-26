@@ -790,5 +790,6 @@ In this project I'm running Terraform on an EC2 Linux instance with IAM role att
 
 ### Conclusion
 
+Using the steps provided in this document I've used Terraform to create an AWS VPC, private and public subnets and also deployed a webserver and database server in public and private subnet. Terraform allows you to create resources quickly and easily.
 
-
+Thank you!!!

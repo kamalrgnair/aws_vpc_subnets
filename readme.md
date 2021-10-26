@@ -161,7 +161,7 @@ In this project I'm running Terraform on an EC2 Linux instance with IAM role att
 
   ​														
 
-  ​	                                                     **Public subnet1 **
+  ​	                                                     **Public subnet1**
 
   ```
   resource "aws_subnet" "public1" {

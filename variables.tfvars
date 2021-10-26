@@ -1,0 +1,5 @@
+ami         = "ami-041d6256ed0f2061c"
+type        = "t2.micro"
+project     = "mkduo"
+vpc_cidr    = "172.14.0.0/16"
+vpc_subnets = "3"

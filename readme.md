@@ -86,11 +86,11 @@ In this project I'm running Terraform on an EC2 Linux instance with IAM role att
 - #### Passing input variable values in a variable definitions (.tfvars) file ```variables.tfvars```
 
   ```
-  ami			= "ami-041d6256ed0f2061c"
-  type		= "t2.micro"
-  project		= "mkduo"
-  vpc_cidr 	= "172.14.0.0/16"
-  vpc_subnets = "3"
+  ami			     = "ami-041d6256ed0f2061c"
+  type		     = "t2.micro"
+  project		   = "mkduo"
+  vpc_cidr 	   = "172.14.0.0/16"
+  vpc_subnets  = "3"
   ```
 
 - #### Creating main configuration for VPC infrastructure in main.tf file
